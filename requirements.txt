@@ -1,0 +1,5 @@
+PyQt5>=5.15.0
+PyQtWebEngine>=5.15.0
+folium>=0.12.1
+pyproj>=3.0.0
+pyserial>=3.4
