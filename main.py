@@ -102,13 +102,13 @@ class MapWindow(QMainWindow):
         # Class attributes
         self.survey_points = []
         self.timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.survey_dir = f"Survey/{self.timestamp}"
-        os.makedirs(self.survey_dir, exist_ok=True)
-        self.MAP_FILE = f"{self.survey_dir}/map_{self.timestamp}.html"
-        self.CSV_FILE = f"{self.survey_dir}/survey_log_{self.timestamp}.csv"
-        self.depth_log_file = f"{self.survey_dir}/depth_{self.timestamp}.csv"
-        self.sonar_serial = None
-        soft_logrecord_flag = False  # Flag to indicate if logging is active
+        #self.survey_dir = f"Survey/{self.timestamp}"
+        #os.makedirs(self.survey_dir, exist_ok=True)
+        #self.MAP_FILE = f"{self.survey_dir}/map_{self.timestamp}.html"
+        #self.CSV_FILE = f"{self.survey_dir}/survey_log_{self.timestamp}.csv"
+        #self.depth_log_file = f"{self.survey_dir}/depth_{self.timestamp}.csv"
+        #self.sonar_serial = None
+        #soft_logrecord_flag = False  # Flag to indicate if logging is active
 
         # Setup UDP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -160,13 +160,12 @@ class MapWindow(QMainWindow):
         layout = QVBoxLayout()
 
         # File info
-        self.mapfilelabel = QLabel(f"Map file: map_{self.timestamp}.html")
-        self.logfilelabel = QLabel(f"Log file: survey_log_{self.timestamp}.csv")
-        open_folder_btn = QPushButton("Open Folder")
-        open_folder_btn.clicked.connect(self.open_survey_folder)
-        layout.addWidget(self.mapfilelabel)
-        layout.addWidget(self.logfilelabel)
-        layout.addWidget(open_folder_btn)
+        self.projectFolder = QLabel(f"No Project Selected")
+        self.open_folder_btn = QPushButton("Open Folder")
+        self.open_folder_btn.setDisabled(True)
+        self.open_folder_btn.clicked.connect(self.open_survey_folder)
+        layout.addWidget(self.projectFolder)
+        layout.addWidget(self.open_folder_btn)
         layout.addSpacing(20)
 
 
@@ -627,8 +626,6 @@ class MapWindow(QMainWindow):
     def closeEvent(self, event):
         """Ensure serial port and MAVLink thread are closed on exit."""
         self.stop_mavlink_thread()
-        if self.sonar_serial and self.sonar_serial.is_open:
-            self.sonar_serial.close()
         event.accept()
 
 
@@ -760,6 +757,9 @@ class MapWindow(QMainWindow):
         if not base_dir:
             return
 
+        self.projectFolder.setText(f"Project Name: {location_name}")
+        self.open_folder_btn.setDisabled(False)
+
         # Create folder for the new survey
         survey_folder = os.path.join(base_dir, location_name.strip())
         os.makedirs(survey_folder, exist_ok=True)
@@ -795,7 +795,7 @@ class MapWindow(QMainWindow):
     def runRecord(self):
         """Run the record function to log data."""
         if self.soft_vars.soft_logrecord_flag:
-            data += f"Timestamp: {self.soft_vars.ASV_gps['date_time']}, "
+            data = f"Timestamp: {self.soft_vars.ASV_gps['date_time']}, "
             data += f"GPS: {self.soft_vars.ASV_gps['latitude']}, {self.soft_vars.ASV_gps['longitude']}, "
             data += f"Ping Sonar: {self.soft_vars.ASV_pingsonar}, "
             data += f"Attitude: {self.soft_vars.ASV_attitude['roll']}, {self.soft_vars.ASV_attitude['pitch']}, {self.soft_vars.ASV_attitude['yaw']}"
